@@ -1,8 +1,8 @@
 
 ARG JAVA_VERSION="11"
-ARG JAVA_FLAVOR=""
+ARG JAVA_JVM=""
 
-FROM adoptopenjdk:${JAVA_VERSION}-jre${JAVA_FLAVOR}
+FROM adoptopenjdk:${JAVA_VERSION}-jre${JAVA_JVM}
 
 LABEL maintainer="luca.chiabrera@gmail.com"
 
