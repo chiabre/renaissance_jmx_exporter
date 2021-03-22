@@ -1,0 +1,1 @@
+docker run --rm --name renaissance -i -v `pwd`:/opt/renaissance/output -p 9404:9404/tcp chiabre/renaissance_jmx_exporter:0.11.0-java11 

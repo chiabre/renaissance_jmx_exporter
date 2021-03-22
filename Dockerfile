@@ -1,0 +1,30 @@
+
+ARG JAVA_VERSION="11"
+ARG JAVA_FLAVOR=""
+
+FROM adoptopenjdk:${JAVA_VERSION}-jre${JAVA_FLAVOR}
+
+LABEL maintainer="luca.chiabrera@gmail.com"
+
+ARG RENAISSANCE_VERSION="0.11.0"
+ENV RENAISSANCE_VERSION=${RENAISSANCE_VERSION}
+
+ARG JMX_EXPORTER_VERSION="0.15.0"
+ENV JMX_EXPORTER_VERSION=${JMX_EXPORTER_VERSION}
+
+ENV WORK_DIR /opt/renaissance
+ENV OUTPUT_DIR ${WORK_DIR}/output
+
+ENV JAVA_OPTS "-Xmx2048m"
+ENV RENAISSANCE_OPTS "page-rank"
+
+RUN mkdir -p ${WORK_DIR} \
+    && curl --location --silent --show-error --output ${WORK_DIR}/renaissance-gpl-${RENAISSANCE_VERSION}.jar https://github.com/renaissance-benchmarks/renaissance/releases/download/v${RENAISSANCE_VERSION}/renaissance-gpl-${RENAISSANCE_VERSION}.jar \
+    && curl --location --silent --show-error --output ${WORK_DIR}/jmx_prometheus_javaagent-${JMX_EXPORTER_VERSION}.jar https://repo1.maven.org/maven2/io/prometheus/jmx/jmx_prometheus_javaagent/${JMX_EXPORTER_VERSION}/jmx_prometheus_javaagent-${JMX_EXPORTER_VERSION}.jar
+
+COPY exporter_config.yml  ${WORK_DIR}/exporter_config.yml
+COPY parse_output-${RENAISSANCE_VERSION}.sh ${OUTPUT_DIR}/parse_output-${RENAISSANCE_VERSION}.sh
+
+EXPOSE 9404 
+
+CMD java $JAVA_OPTS -javaagent:${WORK_DIR}/jmx_prometheus_javaagent-${JMX_EXPORTER_VERSION}.jar=9404:${WORK_DIR}/exporter_config.yml -jar ${WORK_DIR}/renaissance-gpl-${RENAISSANCE_VERSION}.jar $RENAISSANCE_OPTS --csv ${OUTPUT_DIR}/output.csv && sh ${OUTPUT_DIR}/parse_output-${RENAISSANCE_VERSION}.sh
