@@ -15,16 +15,16 @@ ENV JMX_EXPORTER_VERSION=${JMX_EXPORTER_VERSION}
 ENV WORK_DIR /opt/renaissance
 ENV OUTPUT_DIR ${WORK_DIR}/output
 
-ENV JAVA_OPTS "-Xmx2048m"
-ENV RENAISSANCE_OPTS "page-rank"
+ENV JAVA_OPTS ""
+ENV RENAISSANCE_OPTS "akka-uct"
 
 RUN mkdir -p ${WORK_DIR} \
     && curl --location --silent --show-error --output ${WORK_DIR}/renaissance-gpl-${RENAISSANCE_VERSION}.jar https://github.com/renaissance-benchmarks/renaissance/releases/download/v${RENAISSANCE_VERSION}/renaissance-gpl-${RENAISSANCE_VERSION}.jar \
     && curl --location --silent --show-error --output ${WORK_DIR}/jmx_prometheus_javaagent-${JMX_EXPORTER_VERSION}.jar https://repo1.maven.org/maven2/io/prometheus/jmx/jmx_prometheus_javaagent/${JMX_EXPORTER_VERSION}/jmx_prometheus_javaagent-${JMX_EXPORTER_VERSION}.jar
 
-COPY exporter_config.yml  ${WORK_DIR}/exporter_config.yml
-COPY parse_output-${RENAISSANCE_VERSION}.sh ${OUTPUT_DIR}/parse_output-${RENAISSANCE_VERSION}.sh
+COPY exporter_config.yml ${WORK_DIR}/exporter_config.yml
+COPY parse_output-${RENAISSANCE_VERSION}.sh ${WORK_DIR}/parse_output-${RENAISSANCE_VERSION}.sh
 
 EXPOSE 9404 
 
-CMD java $JAVA_OPTS -javaagent:${WORK_DIR}/jmx_prometheus_javaagent-${JMX_EXPORTER_VERSION}.jar=9404:${WORK_DIR}/exporter_config.yml -jar ${WORK_DIR}/renaissance-gpl-${RENAISSANCE_VERSION}.jar $RENAISSANCE_OPTS --csv ${OUTPUT_DIR}/output.csv && sh ${OUTPUT_DIR}/parse_output-${RENAISSANCE_VERSION}.sh
+CMD java --version && java $JAVA_OPTS -javaagent:${WORK_DIR}/jmx_prometheus_javaagent-${JMX_EXPORTER_VERSION}.jar=9404:${WORK_DIR}/exporter_config.yml -jar ${WORK_DIR}/renaissance-gpl-${RENAISSANCE_VERSION}.jar $RENAISSANCE_OPTS --csv ${OUTPUT_DIR}/output.csv && sh ${WORK_DIR}/parse_output-${RENAISSANCE_VERSION}.sh
